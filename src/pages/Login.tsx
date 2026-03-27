@@ -75,7 +75,7 @@ const Login = () => {
             <Card className="shadow-lg border-0 rounded-4">
               <Card.Body className="p-5">
                 <div className="text-center mb-4">
-                  {/* Aquí pueden poner el logo real de la UMG si lo tienen en la carpeta public */}
+                  {/* Título estilo UMG */}
                   <h2 className="fw-bold" style={{ color: '#003366' }}>MiUMG Parqueo</h2>
                   <p className="text-muted">Portal de acceso para estudiantes</p>
                 </div>
@@ -118,13 +118,6 @@ const Login = () => {
                     </Link>
                   </div>
                   
-                  {/* Botón para regresar al selector si tienen uno */}
-                  <div className="text-center mt-3">
-                    <Link to="/" className="text-decoration-none text-secondary" style={{ fontSize: '0.9rem' }}>
-                      ← Volver al inicio
-                    </Link>
-                  </div>
-
                 </Form>
               </Card.Body>
             </Card>
