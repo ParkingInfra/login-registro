@@ -8,10 +8,10 @@ async function connectToDB() {
             password: process.env.DB_PASSWORD,
             connectString: process.env.DB_CONNECTION_STRING
         });
-        console.log("✅ Conectado a la Base de Datos Oracle 21c");
+        console.log("[OK] Conectado a la Base de Datos Oracle 21c");
         return connection;
     } catch (err) {
-        console.error("❌ Error conectando a Oracle:", err);
+        console.error("[ERROR] Error conectando a Oracle:", err);
     }
 }
 

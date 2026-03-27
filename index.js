@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const oracledb = require('oracledb');
-const bcrypt = require('bcryptjs'); // Librería para encriptar contraseñas
+const bcrypt = require('bcryptjs'); // Libreria para encriptar contrasenas
 
 const app = express();
 app.use(cors());
@@ -18,17 +18,17 @@ const dbConfig = {
 
 // Ruta de prueba (La que ya viste funcionando)
 app.get('/', async (req, res) => {
-  res.json({ mensaje: "✅ ¡Conexión exitosa a Oracle 21c (Usuario: parqueo_umg)!" });
+  res.json({ mensaje: "Conexion exitosa a Oracle 21c (Usuario: parqueo_umg)" });
 });
 
-// 🚀 RUTA PRINCIPAL: Recibir datos de React y guardar en Oracle
+// --- RUTA PRINCIPAL: Recibir datos de React y guardar en Oracle
 app.post('/api/auth/registro', async (req, res) => {
   let connection;
   try {
     const datos = req.body;
-    console.log("📦 Datos recibidos desde React:", datos);
+    console.log("[INFO] Datos recibidos desde React:", datos);
 
-    // 1. Encriptar la contraseña (Regla de negocio)
+    // 1. Encriptar la contrasena (Regla de negocio)
     const salt = await bcrypt.genSalt(10);
     const contrasenaEncriptada = await bcrypt.hash(datos.password, salt);
 
@@ -55,7 +55,7 @@ app.post('/api/auth/registro', async (req, res) => {
       correo: datos.correo_electronico,
       contrasena: contrasenaEncriptada,
       telefono: datos.telefonos,
-      // Aquí mapeamos los 3 nuevos campos de la dirección
+      // Aqui mapeamos los 3 nuevos campos de la direccion
       id_municipio: parseInt(datos.id_municipio),
       zona: datos.zona ? parseInt(datos.zona) : null,
       nomenclatura: datos.nomenclatura,
@@ -86,14 +86,14 @@ app.post('/api/auth/registro', async (req, res) => {
 
     await connection.execute(sqlEmergencia, bindsEmergencia);
 
-    // 5. Confirmar transacción (El famoso COMMIT)
+    // 5. Confirmar transaccion (El famoso COMMIT)
     await connection.commit();
 
-    console.log("✅ Usuario registrado exitosamente en BD.");
+    console.log("[OK] Usuario registrado exitosamente en BD.");
     res.status(200).json({ mensaje: "Tu registro se completó con éxito. Ya puedes iniciar sesión." });
 
   } catch (err) {
-    console.error("❌ Error al guardar en Oracle:", err);
+    console.error("[ERROR] Error al guardar en Oracle:", err);
     
     // Si algo sale mal, hacemos ROLLBACK para no dejar datos a medias
     if (connection) {
@@ -107,19 +107,19 @@ app.post('/api/auth/registro', async (req, res) => {
     
     res.status(500).json({ error: "Error interno del servidor", detalle: err.message });
   } finally {
-    // 6. Cerrar conexión
+    // 6. Cerrar conexion
     if (connection) {
       try { await connection.close(); } catch (e) { console.error(e); }
     }
   }
 });
 
-// 🔐 RUTA DE LOGIN: Validar credenciales
+// --- RUTA DE LOGIN: Validar credenciales
 app.post('/api/auth/login', async (req, res) => {
   let connection;
   try {
     const { carne, password } = req.body;
-    console.log(`🔑 Intento de login para carné: ${carne}`);
+    console.log(`[INFO] Intento de login para carne: ${carne}`);
 
     connection = await oracledb.getConnection(dbConfig);
 
@@ -132,22 +132,22 @@ app.post('/api/auth/login', async (req, res) => {
       { outFormat: oracledb.OUT_FORMAT_OBJECT }
     );
 
-    // 2. Si no devuelve filas, el carné no existe
+    // 2. Si no devuelve filas, el carne no existe
     if (result.rows.length === 0) {
       return res.status(401).json({ error: "Carné o contraseña incorrectos." });
     }
 
     const usuario = result.rows[0];
 
-    // 3. Comparamos la contraseña de React con la encriptada en Oracle
+    // 3. Comparamos la contrasena de React con la encriptada en Oracle
     const contrasenaValida = await bcrypt.compare(password, usuario.CONTRASENA);
 
     if (!contrasenaValida) {
       return res.status(401).json({ error: "Carné o contraseña incorrectos." });
     }
 
-    // 4. ¡Login exitoso! Devolvemos los datos (sin la contraseña) para el Dashboard
-    console.log(`✅ Acceso concedido a: ${usuario.NOMBRES}`);
+    // 4. Login exitoso. Devolvemos los datos (sin la contrasena) para el Dashboard
+    console.log(`[OK] Acceso concedido a: ${usuario.NOMBRES}`);
     res.status(200).json({
       mensaje: "Login exitoso",
       usuario: {
@@ -159,7 +159,7 @@ app.post('/api/auth/login', async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Error en el Login:", err);
+    console.error("[ERROR] Error en el Login:", err);
     res.status(500).json({ error: "Error interno del servidor", detalle: err.message });
   } finally {
     if (connection) {
@@ -169,5 +169,5 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`🚀 Servidor de Parqueo corriendo en http://localhost:${port}`);
+  console.log(`[SERVER] Servidor de Parqueo corriendo en http://localhost:${port}`);
 });
