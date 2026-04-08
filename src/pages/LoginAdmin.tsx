@@ -1,95 +1,176 @@
+import React from 'react';
 import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import '../index.css'; 
 
-export default function LoginAdmin() {
+const LoginAdmin = () => {
   const navigate = useNavigate();
 
-  const handleLoginAdmin = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Validando correo de administrador en Oracle...");
+    
+    const formData = new FormData(e.currentTarget);
+    const credenciales = Object.fromEntries(formData.entries());
+
+    try {
+      // OJO: Aquí podríamos apuntar a una ruta específica como /api/auth/login-admin
+      // o usar la misma y que Node.js verifique el id_rol. Por ahora usamos la misma.
+      const response = await fetch('http://localhost:3001/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credenciales),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Validación de seguridad extra en el Frontend (Opcional, pero recomendada)
+        // Asumiendo que el rol 1 es Estudiante y roles > 1 son Admin/Gestión
+        if (data.usuario.rol === 1) {
+          Swal.fire({
+            title: 'Acceso Restringido',
+            text: 'Esta área es solo para personal administrativo.',
+            icon: 'warning',
+            confirmButtonColor: 'var(--rojo-institucional)'
+          });
+          return; // Detenemos la ejecución aquí
+        }
+
+        localStorage.setItem('usuarioAdmin', JSON.stringify(data.usuario));
+        const primerNombre = data.usuario.nombres.split(' ')[0];
+
+        Swal.fire({
+          title: `¡Hola de nuevo, ${primerNombre}!`,
+          text: 'Acceso concedido al panel de administración.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false,
+          background: 'var(--fondo-blanco)',
+          color: 'var(--azul-oscuro)'
+        }).then(() => {
+          // Lo mandamos al dashboard (luego podemos hacer un Dashboard exclusivo de Admin)
+          navigate('/dashboard'); 
+        });
+
+      } else {
+        Swal.fire({
+          title: 'Acceso Denegado',
+          text: data.error || 'Credenciales administrativas incorrectas.',
+          icon: 'error',
+          confirmButtonText: 'Reintentar',
+          confirmButtonColor: 'var(--rojo-institucional)'
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        title: 'Error de Servidor',
+        text: 'No se pudo conectar con el servidor central.',
+        icon: 'error',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: 'var(--rojo-institucional)'
+      });
+    }
   };
 
   return (
-    <div 
-      style={{ 
-        minHeight: '100vh', 
-        background: 'linear-gradient(to bottom, #001224, #003366)', 
-        display: 'flex', 
-        alignItems: 'center' 
-      }}
-    >
-      <Container>
+    <div style={{ 
+      backgroundColor: 'var(--fondo-general)', 
+      minHeight: '100vh', 
+      display: 'flex', 
+      alignItems: 'center',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      
+      {/* Círculos decorativos usando tonos más serios para el Admin */}
+      <div style={{
+        position: 'absolute', top: '-100px', right: '-100px', width: '350px', height: '350px',
+        borderRadius: '50%', background: 'radial-gradient(circle, var(--fondo-banner) 0%, transparent 70%)', pointerEvents: 'none'
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '-60px', left: '-60px', width: '250px', height: '250px',
+        borderRadius: '50%', background: 'radial-gradient(circle, var(--fondo-curvas) 0%, transparent 70%)', pointerEvents: 'none'
+      }} />
+
+      <Container style={{ position: 'relative', zIndex: 1 }}>
         <Row className="justify-content-center">
-          <Col md={6} lg={5}>
+          <Col md={5} lg={4}>
             
-            <div className="mb-3">
-              <span 
-                style={{ cursor: 'pointer', color: '#ffffff', opacity: 0.8, fontSize: '0.9rem' }}
-                onClick={() => navigate('/')}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
-              >
+            <div className="text-center mb-3">
+              <Link to="/" className="text-decoration-none" style={{ 
+                color: 'var(--azul-oscuro)', 
+                fontSize: '0.9rem',
+                fontWeight: 'bold'
+              }}>
                 &larr; Regresar a selección de rol
-              </span>
+              </Link>
             </div>
 
-            <Card className="shadow-lg border-0" style={{ borderRadius: '15px' }}>
-              <Card.Body className="p-5">
-                
+            <Card className="border-0 shadow-lg" style={{ 
+              borderRadius: '20px', 
+              overflow: 'hidden',
+              backgroundColor: 'var(--fondo-blanco)'
+            }}>
+              {/* Barra de acento con Azul Institucional Oscuro */}
+              <div style={{ height: '5px', backgroundColor: 'var(--azul-oscuro)' }} />
+              
+              <Card.Body className="p-4 pt-5 pb-5">
                 <div className="text-center mb-4">
-                  <img 
-                    src="/logo.png" 
-                    alt="Logo UMG" 
-                    style={{ width: '80px', marginBottom: '15px' }} 
-                  />
-                  <h3 className="fw-bold" style={{ color: '#003366' }}>Acceso Administrativo</h3>
-                  <p className="text-muted">Colaboradores del sistema de parqueo</p>
+                  <div className="logo-container mb-3">
+                    {/* 🔥 LA CURA DEL LOGO GIGANTE 🔥 */}
+                    <img src="/logo.png" alt="Logo UMG" style={{ width: '110px', height: 'auto', opacity: '0.9' }} />
+                  </div>
+                  <h2 className="mb-1" style={{ color: 'var(--azul-oscuro)' }}>
+                    Portal Administrativo
+                  </h2>
+                  <p style={{ color: 'var(--azul-universitario)', fontSize: '0.88rem', marginBottom: 0 }}>
+                    Gestión de Parqueo UMG
+                  </p>
                 </div>
 
-                <Form onSubmit={handleLoginAdmin}>
-                  <Form.Group className="mb-3" controlId="formCorreoAdmin">
-                    <Form.Label className="fw-semibold text-dark">Correo Electrónico Institucional</Form.Label>
+                <Form onSubmit={handleSubmit} style={{ fontFamily: 'var(--fuente-principal)' }}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-bold" style={{ color: '#333' }}>Correo Electrónico Institucional</Form.Label>
                     <Form.Control 
+                      name="correo_electronico"
                       type="email" 
+                      required 
                       placeholder="usuario@miumg.edu.gt" 
-                      required 
                       className="py-2 bg-light"
                     />
                   </Form.Group>
 
-                  <Form.Group className="mb-4" controlId="formPasswordAdmin">
-                    <Form.Label className="fw-semibold text-dark">Contraseña</Form.Label>
+                  <Form.Group className="mb-4">
+                    <Form.Label style={{ color: 'var(--azul-oscuro)', fontWeight: 'bold' }}>Contraseña de Seguridad</Form.Label>
                     <Form.Control 
-                      type="password" 
-                      placeholder="********" 
-                      required 
-                      className="py-2 bg-light"
+                      name="password" type="password" required 
+                      placeholder="Ingresa tu contraseña"
                     />
                   </Form.Group>
 
-                  <Button 
-                    variant="primary" 
-                    type="submit" 
-                    className="w-100 mb-3 py-2 fw-bold"
-                    style={{ background: '#003366', border: 'none' }}
-                  >
-                    Ingresar a Gestión de Parqueo
-                  </Button>
-
-                  {/* Nota para administrativos sin cuenta */}
-                  <div className="text-center mt-4 pt-3 border-top">
-                    <p className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}>
-                      * El acceso administrativo es asignado por el departamento de IT. Si no tienes acceso, contacta a soporte.
-                    </p>
+                  <div className="d-grid mt-4">
+                    <Button type="submit" size="lg" style={{ 
+                      backgroundColor: 'var(--azul-oscuro)', 
+                      border: 'none',
+                      fontSize: '1rem',
+                      fontWeight: 'bold',
+                      padding: '0.75rem',
+                      fontFamily: 'var(--fuente-titulos)',
+                      fontStyle: 'italic'
+                    }}>
+                      Acceder a Gestión
+                    </Button>
                   </div>
+                  
                 </Form>
-
               </Card.Body>
             </Card>
-
           </Col>
         </Row>
       </Container>
     </div>
   );
-}
+};
+
+export default LoginAdmin;

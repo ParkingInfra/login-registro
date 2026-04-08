@@ -1,96 +1,176 @@
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import { useState } from 'react';
+import { Container, Row, Col, Card, Button, Modal, ListGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { PersonBadge, PersonGear, BuildingGear, InfoCircle, CheckCircleFill } from 'react-bootstrap-icons';
 
-export default function SelectorRol() {
+const HomeSelector = () => {
   const navigate = useNavigate();
+  const [showRequisitos, setShowRequisitos] = useState(false);
+
+  // Funciones para abrir/cerrar el modal de requisitos
+  const handleClose = () => setShowRequisitos(false);
+  const handleShow = () => setShowRequisitos(true);
 
   return (
-    <div 
-      style={{ 
-        minHeight: '100vh', 
-        background: 'linear-gradient(to bottom, #001224, #003366)', 
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        color: 'white'
-      }}
-    >
-      <Container className="py-5">
-        <Row className="mb-5 text-center">
-          <Col>
-            <img 
-              src="/logo.png" 
-              alt="Logo UMG" 
-              style={{ width: '120px', marginBottom: '20px', backgroundColor: 'white', borderRadius: '50%', padding: '5px' }} 
-            />
-            <h2 className="fw-bold">Selecciona tipo de Usuario</h2>
-            <p className="text-light opacity-75">Sistema de Parqueo UMG</p>
-          </Col>
-        </Row>
+    <div style={{ 
+      backgroundColor: 'var(--fondo-general)', 
+      minHeight: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      fontFamily: 'var(--fuente-principal)' 
+    }}>
+      
+      {/* --- HEADER / BARRA SUPERIOR --- */}
+      <div style={{ backgroundColor: 'var(--azul-oscuro)', padding: '15px 0', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
+        <Container className="d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center">
+            {/* Si no tienes logo.png, esto podría salir roto, pero no da error de código */}
+            <img src="/logo.png" alt="UMG" style={{ height: '45px', marginRight: '15px' }} />
+            <h4 className="mb-0 text-white" style={{ fontFamily: 'var(--fuente-titulos)', fontStyle: 'italic' }}>
+              Sistema de Control de Parqueo
+            </h4>
+          </div>
+          <Button 
+            variant="outline-light" 
+            onClick={handleShow}
+            className="d-flex align-items-center gap-2"
+            style={{ borderRadius: '20px', fontSize: '0.9rem' }}
+          >
+            <InfoCircle /> Requisitos y Pagos
+          </Button>
+        </Container>
+      </div>
 
-        <Row className="justify-content-center gap-3">
-          
-          {/* Tarjeta 1: Estudiante / Catedrático */}
-          <Col md={4} lg={3}>
-            <Card 
-              className="h-100 shadow-lg text-white border-0" 
-              style={{ background: 'rgba(255, 255, 255, 0.1)', cursor: 'pointer', transition: 'transform 0.2s' }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-              onClick={() => navigate('/login')}
-            >
-              <Card.Body className="p-4 d-flex flex-column justify-content-center text-center">
-                <h1 className="display-4 mb-3">👤</h1>
-                <h5 className="fw-bold">Estudiante / Catedrático</h5>
-                <p className="mt-2" style={{ fontSize: '0.85rem', color: '#e0e0e0' }}>
-                  Ingreso con carné para alumnos y docentes activos.
-                </p>
-              </Card.Body>
-            </Card>
-          </Col>
+      {/* --- CONTENIDO PRINCIPAL --- */}
+      <Container className="flex-grow-1 d-flex align-items-center justify-content-center py-5">
+        <div style={{ maxWidth: '900px', width: '100%' }}>
+          <div className="text-center mb-5">
+            <h1 style={{ color: 'var(--azul-universitario)', fontSize: '2.5rem', marginBottom: '10px' }}>
+              Bienvenido al Portal
+            </h1>
+            <p className="text-muted" style={{ fontSize: '1.1rem' }}>
+              Selecciona tu perfil para ingresar al sistema de gestión de parqueos
+            </p>
+          </div>
 
-          {/* Tarjeta 2: Administrativo */}
-          <Col md={4} lg={3}>
-            <Card 
-              className="h-100 shadow-lg text-white border-0" 
-              style={{ background: 'rgba(255, 255, 255, 0.1)', cursor: 'pointer', transition: 'transform 0.2s' }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-              onClick={() => navigate('/login-admin')}
-            >
-              <Card.Body className="p-4 d-flex flex-column justify-content-center text-center">
-                <h1 className="display-4 mb-3">🏢</h1>
-                <h5 className="fw-bold">Administrativo</h5>
-                <p className="mt-2" style={{ fontSize: '0.85rem', color: '#e0e0e0' }}>
-                  Ingreso con correo para colaboradores de parqueo.
-                </p>
-              </Card.Body>
-            </Card>
-          </Col>
+          <Row className="g-4">
+            {/* OPCIÓN 1: ESTUDIANTES / DOCENTES */}
+            <Col md={4}>
+              <Card 
+                className="h-100 border-0 shadow-sm text-center card-hover" 
+                style={{ cursor: 'pointer', transition: 'transform 0.3s' }}
+                onClick={() => navigate('/login')}
+              >
+                <Card.Body className="p-4 d-flex flex-column align-items-center">
+                  <div style={{ backgroundColor: 'var(--fondo-curvas)', padding: '20px', borderRadius: '50%', marginBottom: '20px' }}>
+                    <PersonBadge size={50} style={{ color: 'var(--azul-universitario)' }} />
+                  </div>
+                  <h4 className="fw-bold" style={{ color: 'var(--azul-oscuro)' }}>Estudiantes / Docentes</h4>
+                  <p className="text-muted small">Accede para registrar vehículos, solicitar marbetes y ver tu estado.</p>
+                  <Button className="mt-auto w-100" style={{ backgroundColor: 'var(--azul-universitario)', border: 'none' }}>
+                    Ingresar
+                  </Button>
+                </Card.Body>
+              </Card>
+            </Col>
 
-          {/* Tarjeta 3: Gestión de Usuarios (RRHH) - Funcionalidad Simulada */}
-          <Col md={4} lg={3}>
-            <Card 
-              className="h-100 text-white" 
-              style={{ 
-                background: 'rgba(0, 0, 0, 0.2)', 
-                border: '2px dashed rgba(255,255,255,0.3)', 
-                cursor: 'not-allowed' 
-              }}
-              onClick={() => alert('🔒 Este módulo corresponde a RRHH. Fuera del alcance del Sprint 1, pero contemplado en la arquitectura.')}
-            >
-              <Card.Body className="p-4 d-flex flex-column justify-content-center text-center opacity-75">
-                <h1 className="display-4 mb-3">⚙️</h1>
-                <h5 className="fw-bold">Gestión de Usuarios</h5>
-                <p className="mt-2" style={{ fontSize: '0.85rem', color: '#adb5bd' }}>
-                  Acceso restringido para creación de cuentas administrativas.
-                </p>
-              </Card.Body>
-            </Card>
-          </Col>
+            {/* OPCIÓN 2: ADMINISTRATIVOS */}
+            <Col md={4}>
+              <Card 
+                className="h-100 border-0 shadow-sm text-center" 
+                style={{ cursor: 'pointer' }}
+                onClick={() => navigate('/login-admin')}
+              >
+                <Card.Body className="p-4 d-flex flex-column align-items-center">
+                  <div style={{ backgroundColor: 'var(--fondo-banner)', padding: '20px', borderRadius: '50%', marginBottom: '20px' }}>
+                    <PersonGear size={50} style={{ color: 'var(--azul-oscuro)' }} />
+                  </div>
+                  <h4 className="fw-bold" style={{ color: 'var(--azul-oscuro)' }}>Administración</h4>
+                  <p className="text-muted small">Gestión de usuarios, reportes y validación de documentos oficiales.</p>
+                  <Button className="mt-auto w-100" style={{ backgroundColor: 'var(--azul-oscuro)', border: 'none' }}>
+                    Gestionar
+                  </Button>
+                </Card.Body>
+              </Card> {/* <--- Aquí faltaba cerrar el Card */}
+            </Col>
 
-        </Row>
+            {/* OPCIÓN 3: GESTIÓN / SEGURIDAD */}
+            <Col md={4}>
+              <Card className="h-100 border-0 shadow-sm text-center">
+                <Card.Body className="p-4 d-flex flex-column align-items-center">
+                  <div style={{ backgroundColor: '#e2e3e5', padding: '20px', borderRadius: '50%', marginBottom: '20px' }}>
+                    <BuildingGear size={50} className="text-secondary" />
+                  </div>
+                  <h4 className="fw-bold" style={{ color: 'var(--azul-oscuro)' }}>Seguridad</h4>
+                  <p className="text-muted small">Módulo de garita para escaneo de QR y control de entradas/salidas.</p>
+                  <Button className="mt-auto w-100" variant="secondary" disabled>
+                    Próximamente
+                  </Button>
+                </Card.Body>
+              </Card> {/* <--- Aquí también faltaba cerrar el Card */}
+            </Col>
+          </Row>
+        </div>
       </Container>
+
+      {/* --- FOOTER --- */}
+      <div style={{ backgroundColor: 'var(--azul-marino)', color: 'white', padding: '20px 0', textAlign: 'center' }}>
+        <Container>
+          <small>&copy; 2026 Universidad Mariano Gálvez de Guatemala - Facultad de Ingeniería</small>
+        </Container>
+      </div>
+
+      {/* --- MODAL DE REQUISITOS (El punto que pidió el ingeniero) --- */}
+      <Modal show={showRequisitos} onHide={handleClose} size="lg" centered>
+        <Modal.Header closeButton style={{ borderBottom: '3px solid var(--azul-celeste-v2)' }}>
+          <Modal.Title style={{ fontFamily: 'var(--fuente-titulos)', fontStyle: 'italic', color: 'var(--azul-universitario)' }}>
+            Información y Requisitos del Parqueo
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <Row>
+            <Col md={6}>
+              <h5 className="fw-bold mb-3" style={{ color: 'var(--azul-oscuro)' }}>¿Cómo crear tu cuenta?</h5>
+              <ListGroup variant="flush" className="mb-4">
+                <ListGroup.Item className="d-flex align-items-start border-0 px-0">
+                  <CheckCircleFill className="text-success me-2 mt-1" /> Ser estudiante activo con carné vigente.
+                </ListGroup.Item>
+                <ListGroup.Item className="d-flex align-items-start border-0 px-0">
+                  <CheckCircleFill className="text-success me-2 mt-1" /> Contar con correo institucional (@miumg.edu.gt).
+                </ListGroup.Item>
+                <ListGroup.Item className="d-flex align-items-start border-0 px-0">
+                  <CheckCircleFill className="text-success me-2 mt-1" /> Completar el formulario de registro con datos de emergencia.
+                </ListGroup.Item>
+              </ListGroup>
+            </Col>
+            <Col md={6}>
+              <h5 className="fw-bold mb-3" style={{ color: 'var(--azul-oscuro)' }}>Requisitos de Marbete</h5>
+              <ListGroup variant="flush">
+                <ListGroup.Item className="d-flex align-items-start border-0 px-0">
+                  <CheckCircleFill className="text-primary me-2 mt-1" /> Tarjeta de circulación vigente del vehículo.
+                </ListGroup.Item>
+                <ListGroup.Item className="d-flex align-items-start border-0 px-0">
+                  <CheckCircleFill className="text-primary me-2 mt-1" /> Fotografía legible de la placa.
+                </ListGroup.Item>
+                <ListGroup.Item className="d-flex align-items-start border-0 px-0">
+                  <CheckCircleFill className="text-primary me-2 mt-1" /> Comprobante de pago de parqueo del ciclo actual.
+                </ListGroup.Item>
+              </ListGroup>
+            </Col>
+          </Row>
+          <div className="mt-3 p-3 rounded" style={{ backgroundColor: 'var(--fondo-curvas)', color: 'var(--azul-oscuro)' }}>
+            <strong>Nota:</strong> Los pagos se realizan únicamente a través del portal de pagos oficial de la Universidad o en agencias bancarias autorizadas.
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button style={{ backgroundColor: 'var(--azul-universitario)', border: 'none' }} onClick={handleClose}>
+            Entendido
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
     </div>
   );
-}
+};
+
+export default HomeSelector;

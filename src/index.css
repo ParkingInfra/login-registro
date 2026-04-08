@@ -1,0 +1,48 @@
+/* 1. Importamos la fuente Ubuntu Italic desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,400;0,500;0,700&display=swap');
+
+/* Si tienen el archivo de la fuente "Brittany Firma", se importaría aquí con @font-face. 
+   Por ahora usaremos una alternativa web segura o la dejamos preparada */
+
+:root {
+  /* ==========================================
+     PALETA DE COLORES OFICIAL (Basada en PDF)
+     ========================================== */
+  
+  /* Colores Principales */
+  --azul-oscuro: #1F4E79;       /* Barra Superior / Menú [cite: 6] */
+  --azul-marino: #003366;       /* Footer [cite: 6] */
+  --azul-universitario: #1A6AA6; /* Títulos y Botones interactivos [cite: 6, 31] */
+  --azul-celeste-v1: #20A4D6;   /* Decoraciones [cite: 6] */
+  --azul-celeste-v2: #00CCFF;   /* Acentos vivos [cite: 6] */
+  
+  /* Colores de Fondo */
+  --fondo-banner: #A7C9D6;      /*  */
+  --fondo-curvas: #CCF2FF;      /*  */
+  --fondo-general: #F2F2F2;     /* Fondo de página  */
+  --fondo-blanco: #FFFFFF;      /* Contenedores  */
+  
+  /* Colores de Alerta */
+  --rojo-institucional: #C7352E; /* Errores y Alertas [cite: 8, 33] */
+
+  /* ==========================================
+     TIPOGRAFÍA OFICIAL
+     ========================================== */
+  /* Century Gothic es una fuente estándar de Windows, usamos fallbacks por si acaso */
+  --fuente-principal: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif; /* [cite: 11] */
+  --fuente-titulos: 'Ubuntu', sans-serif; /*  */
+}
+
+/* Aplicamos la fuente Century Gothic a TODO el documento por defecto [cite: 13] */
+body {
+  font-family: var(--fuente-principal);
+  background-color: var(--fondo-general); /*  */
+  color: #000000;
+}
+
+/* Forzamos que todos los H1, H2, H3 usen Ubuntu Cursiva como pide el PDF [cite: 15, 16, 17] */
+h1, h2, h3, h4, h5, .titulo-ubuntu {
+  font-family: var(--fuente-titulos) !important;
+  font-style: italic !important;
+  color: var(--azul-universitario); /* [cite: 18] */
+}

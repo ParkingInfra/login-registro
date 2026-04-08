@@ -2,6 +2,8 @@ import React from 'react';
 import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
+// Asegúrate de importar tu CSS global aquí si no lo tienes en el App.tsx
+import '../index.css'; 
 
 const Login = () => {
   const navigate = useNavigate();
@@ -9,50 +11,41 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // Capturamos los datos del formulario (Carné y Contraseña)
     const formData = new FormData(e.currentTarget);
     const credenciales = Object.fromEntries(formData.entries());
 
     try {
-      // Hacemos la petición al backend en Node.js
       const response = await fetch('http://localhost:3001/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credenciales),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Guardamos los datos del usuario en la memoria del navegador (Vital para el Dashboard)
         localStorage.setItem('usuarioParqueo', JSON.stringify(data.usuario));
-
-        // Extraemos solo el primer nombre para que el saludo sea amigable
         const primerNombre = data.usuario.nombres.split(' ')[0];
 
-        // Alerta de éxito elegante
         Swal.fire({
           title: `¡Bienvenido, ${primerNombre}!`,
           text: 'Autenticación exitosa. Redirigiendo al sistema...',
           icon: 'success',
-          timer: 1500, // Se cierra solita en 1.5 segundos
+          timer: 1500,
           showConfirmButton: false,
-          background: '#ffffff',
-          color: '#001224'
+          background: 'var(--fondo-blanco)',
+          color: 'var(--azul-universitario)'
         }).then(() => {
-          navigate('/dashboard'); // ¡Hacia la nueva pantalla del Sprint 2!
+          navigate('/dashboard');
         });
 
       } else {
-        // Alerta de credenciales incorrectas (Protección contra intrusos)
         Swal.fire({
           title: 'Acceso Denegado',
           text: data.error || 'Carné o contraseña incorrectos.',
           icon: 'error',
           confirmButtonText: 'Reintentar',
-          confirmButtonColor: '#003366'
+          confirmButtonColor: 'var(--rojo-institucional)' // Uso del rojo oficial para alertas críticas
         });
       }
     } catch (error) {
@@ -62,62 +55,110 @@ const Login = () => {
         text: 'No se pudo conectar con la base de datos Oracle.',
         icon: 'error',
         confirmButtonText: 'Entendido',
-        confirmButtonColor: '#d33'
+        confirmButtonColor: 'var(--rojo-institucional)'
       });
     }
   };
 
   return (
-    <div style={{ backgroundColor: '#001224', minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
-      <Container>
+    <div style={{ 
+      backgroundColor: 'var(--fondo-general)', // Gris claro según PDF
+      minHeight: '100vh', 
+      display: 'flex', 
+      alignItems: 'center',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      
+      {/* Círculos decorativos usando los celestes del PDF */}
+      <div style={{
+        position: 'absolute', top: '-100px', right: '-100px', width: '350px', height: '350px',
+        borderRadius: '50%', background: 'radial-gradient(circle, var(--fondo-curvas) 0%, transparent 70%)', pointerEvents: 'none'
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '-60px', left: '-60px', width: '250px', height: '250px',
+        borderRadius: '50%', background: 'radial-gradient(circle, var(--fondo-banner) 0%, transparent 70%)', pointerEvents: 'none'
+      }} />
+
+      <Container style={{ position: 'relative', zIndex: 1 }}>
         <Row className="justify-content-center">
-          <Col md={6} lg={5}>
-            <Card className="shadow-lg border-0 rounded-4">
-              <Card.Body className="p-5">
+          <Col md={5} lg={4}>
+            
+            <div className="text-center mb-3">
+              <Link to="/" className="text-decoration-none" style={{ 
+                color: 'var(--azul-oscuro)', 
+                fontSize: '0.9rem',
+                fontWeight: 'bold'
+              }}>
+                &larr; Regresar a selección de rol
+              </Link>
+            </div>
+
+            <Card className="border-0 shadow-lg" style={{ 
+              borderRadius: '20px', 
+              overflow: 'hidden',
+              backgroundColor: 'var(--fondo-blanco)'
+            }}>
+              {/* Barra de acento con Azul Celeste Brillante 2 [cite: 6] */}
+              <div style={{ height: '5px', backgroundColor: 'var(--azul-celeste-v2)' }} />
+              
+              <Card.Body className="p-4 pt-5 pb-5">
                 <div className="text-center mb-4">
-                  {/* Título estilo UMG */}
-                  <h2 className="fw-bold" style={{ color: '#003366' }}>MiUMG Parqueo</h2>
-                  <p className="text-muted">Portal de acceso para estudiantes</p>
+                  <div className="logo-container mb-3">
+                    <img src="/logo.png" alt="Logo UMG" style={{ width: '120px', height: 'auto', opacity: '0.9' }} />
+                  </div>
+                  {/* El H2 automáticamente agarrará Ubuntu Cursiva por nuestro CSS global */}
+                  <h2 className="mb-1" style={{ color: 'var(--azul-universitario)' }}>
+                    MiUMG Parqueo
+                  </h2>
+                  <p style={{ color: 'var(--azul-oscuro)', fontSize: '0.88rem', marginBottom: 0 }}>
+                    Portal de acceso para estudiantes
+                  </p>
                 </div>
 
-                <Form onSubmit={handleSubmit}>
-                  <Form.Group className="mb-4">
-                    <Form.Label className="fw-semibold">Número de Carné</Form.Label>
+                <Form onSubmit={handleSubmit} style={{ fontFamily: 'var(--fuente-principal)' }}>
+                  <Form.Group className="mb-3">
+                    <Form.Label style={{ color: 'var(--azul-universitario)', fontWeight: 'bold' }}>Número de Carné</Form.Label>
                     <Form.Control 
-                      name="carne" 
-                      type="text" 
-                      required 
+                      name="carne" type="text" required 
                       placeholder="Ej: 5190-24-1234" 
                       pattern="[0-9]{4}-[0-9]{2}-[0-9]{1,6}" 
-                      title="Formato válido: 0000-00-0000"
-                      className="bg-light py-2"
                     />
                   </Form.Group>
 
                   <Form.Group className="mb-4">
-                    <Form.Label className="fw-semibold">Contraseña</Form.Label>
+                    <Form.Label style={{ color: 'var(--azul-universitario)', fontWeight: 'bold' }}>Contraseña</Form.Label>
                     <Form.Control 
-                      name="password" 
-                      type="password" 
-                      required 
-                      placeholder="Ingresa tu contraseña" 
-                      className="bg-light py-2"
+                      name="password" type="password" required 
+                      placeholder="Ingresa tu contraseña"
                     />
                   </Form.Group>
 
-                  <div className="d-grid gap-2 mt-4">
-                    <Button variant="primary" type="submit" size="lg" style={{ backgroundColor: '#003366', border: 'none' }}>
+                  <div className="d-grid mt-4">
+                    {/* Botón de Acción con Azul Universitario [cite: 31] */}
+                    <Button type="submit" size="lg" style={{ 
+                      backgroundColor: 'var(--azul-universitario)', 
+                      border: 'none',
+                      fontSize: '1rem',
+                      fontWeight: 'bold',
+                      padding: '0.75rem',
+                      fontFamily: 'var(--fuente-titulos)', /* Ubuntu para el Call To Action */
+                      fontStyle: 'italic'
+                    }}>
                       Iniciar Sesión
                     </Button>
                   </div>
                   
                   <div className="text-center mt-4">
-                    <span className="text-muted">¿Aún no tienes tu acceso? </span>
-                    <Link to="/registro" className="text-decoration-none fw-bold" style={{ color: '#003366' }}>
+                    <span style={{ color: 'var(--azul-oscuro)', fontSize: '0.88rem' }}>¿Aún no tienes tu acceso? </span>
+                    <Link to="/registro" className="text-decoration-none" style={{ 
+                      color: 'var(--azul-celeste-v1)', 
+                      fontSize: '0.9rem',
+                      fontWeight: 'bold' 
+                    }}>
                       Regístrate aquí
                     </Link>
                   </div>
-                  
                 </Form>
               </Card.Body>
             </Card>
