@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col, Card, Button, Modal, ListGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { PersonBadge, PersonGear, BuildingGear, InfoCircle, CheckCircleFill } from 'react-bootstrap-icons';
+import { PersonBadge, PersonGear, PeopleFill, InfoCircle, CheckCircleFill } from 'react-bootstrap-icons';
 
 const HomeSelector = () => {
   const navigate = useNavigate();
   const [showRequisitos, setShowRequisitos] = useState(false);
 
-  // Funciones para abrir/cerrar el modal de requisitos
   const handleClose = () => setShowRequisitos(false);
   const handleShow = () => setShowRequisitos(true);
 
@@ -20,11 +19,10 @@ const HomeSelector = () => {
       fontFamily: 'var(--fuente-principal)' 
     }}>
       
-      {/* --- HEADER / BARRA SUPERIOR --- */}
+      {/* --- HEADER --- */}
       <div style={{ backgroundColor: 'var(--azul-oscuro)', padding: '15px 0', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
         <Container className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
-            {/* Si no tienes logo.png, esto podría salir roto, pero no da error de código */}
             <img src="/logo.png" alt="UMG" style={{ height: '45px', marginRight: '15px' }} />
             <h4 className="mb-0 text-white" style={{ fontFamily: 'var(--fuente-titulos)', fontStyle: 'italic' }}>
               Sistema de Control de Parqueo
@@ -43,7 +41,7 @@ const HomeSelector = () => {
 
       {/* --- CONTENIDO PRINCIPAL --- */}
       <Container className="flex-grow-1 d-flex align-items-center justify-content-center py-5">
-        <div style={{ maxWidth: '900px', width: '100%' }}>
+        <div style={{ maxWidth: '1000px', width: '100%' }}>
           <div className="text-center mb-5">
             <h1 style={{ color: 'var(--azul-universitario)', fontSize: '2.5rem', marginBottom: '10px' }}>
               Bienvenido al Portal
@@ -54,7 +52,7 @@ const HomeSelector = () => {
           </div>
 
           <Row className="g-4">
-            {/* OPCIÓN 1: ESTUDIANTES / DOCENTES */}
+            {/* OPCIÓN 1: ESTUDIANTE / CATEDRÁTICO */}
             <Col md={4}>
               <Card 
                 className="h-100 border-0 shadow-sm text-center card-hover" 
@@ -63,10 +61,10 @@ const HomeSelector = () => {
               >
                 <Card.Body className="p-4 d-flex flex-column align-items-center">
                   <div style={{ backgroundColor: 'var(--fondo-curvas)', padding: '20px', borderRadius: '50%', marginBottom: '20px' }}>
-                    <PersonBadge size={50} style={{ color: 'var(--azul-universitario)' }} />
+                    <PersonBadge size={45} style={{ color: 'var(--azul-universitario)' }} />
                   </div>
-                  <h4 className="fw-bold" style={{ color: 'var(--azul-oscuro)' }}>Estudiantes / Docentes</h4>
-                  <p className="text-muted small">Accede para registrar vehículos, solicitar marbetes y ver tu estado.</p>
+                  <h4 className="fw-bold" style={{ color: 'var(--azul-oscuro)', fontSize: '1.25rem' }}>Estudiante / Catedrático</h4>
+                  <p className="text-muted small mt-2">Ingresa con carné para alumnos y docentes activos.</p>
                   <Button className="mt-auto w-100" style={{ backgroundColor: 'var(--azul-universitario)', border: 'none' }}>
                     Ingresar
                   </Button>
@@ -74,40 +72,44 @@ const HomeSelector = () => {
               </Card>
             </Col>
 
-            {/* OPCIÓN 2: ADMINISTRATIVOS */}
+            {/* OPCIÓN 2: ADMINISTRATIVO */}
             <Col md={4}>
               <Card 
                 className="h-100 border-0 shadow-sm text-center" 
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', transition: 'transform 0.3s' }}
                 onClick={() => navigate('/login-admin')}
               >
                 <Card.Body className="p-4 d-flex flex-column align-items-center">
                   <div style={{ backgroundColor: 'var(--fondo-banner)', padding: '20px', borderRadius: '50%', marginBottom: '20px' }}>
-                    <PersonGear size={50} style={{ color: 'var(--azul-oscuro)' }} />
+                    <PersonGear size={45} style={{ color: 'var(--azul-oscuro)' }} />
                   </div>
-                  <h4 className="fw-bold" style={{ color: 'var(--azul-oscuro)' }}>Administración</h4>
-                  <p className="text-muted small">Gestión de usuarios, reportes y validación de documentos oficiales.</p>
+                  <h4 className="fw-bold" style={{ color: 'var(--azul-oscuro)', fontSize: '1.25rem' }}>Administrativo</h4>
+                  <p className="text-muted small mt-2">Ingreso con correo para colaboradores de parqueo.</p>
                   <Button className="mt-auto w-100" style={{ backgroundColor: 'var(--azul-oscuro)', border: 'none' }}>
                     Gestionar
                   </Button>
                 </Card.Body>
-              </Card> {/* <--- Aquí faltaba cerrar el Card */}
+              </Card>
             </Col>
 
-            {/* OPCIÓN 3: GESTIÓN / SEGURIDAD */}
+            {/* OPCIÓN 3: GESTIÓN DE USUARIOS */}
             <Col md={4}>
-              <Card className="h-100 border-0 shadow-sm text-center">
+              <Card 
+                className="h-100 border-0 shadow-sm text-center"
+                style={{ cursor: 'pointer', transition: 'transform 0.3s' }}
+                /* Aquí puedes poner la ruta hacia la pantalla del super admin en el futuro */
+              >
                 <Card.Body className="p-4 d-flex flex-column align-items-center">
                   <div style={{ backgroundColor: '#e2e3e5', padding: '20px', borderRadius: '50%', marginBottom: '20px' }}>
-                    <BuildingGear size={50} className="text-secondary" />
+                    <PeopleFill size={45} style={{ color: '#495057' }} />
                   </div>
-                  <h4 className="fw-bold" style={{ color: 'var(--azul-oscuro)' }}>Seguridad</h4>
-                  <p className="text-muted small">Módulo de garita para escaneo de QR y control de entradas/salidas.</p>
-                  <Button className="mt-auto w-100" variant="secondary" disabled>
-                    Próximamente
+                  <h4 className="fw-bold" style={{ color: 'var(--azul-oscuro)', fontSize: '1.25rem' }}>Gestión de Usuarios</h4>
+                  <p className="text-muted small mt-2">Acceso restringido para creación de cuentas administrativas.</p>
+                  <Button className="mt-auto w-100" variant="secondary">
+                    Acceder
                   </Button>
                 </Card.Body>
-              </Card> {/* <--- Aquí también faltaba cerrar el Card */}
+              </Card>
             </Col>
           </Row>
         </div>
@@ -120,7 +122,7 @@ const HomeSelector = () => {
         </Container>
       </div>
 
-      {/* --- MODAL DE REQUISITOS (El punto que pidió el ingeniero) --- */}
+      {/* --- MODAL DE REQUISITOS --- */}
       <Modal show={showRequisitos} onHide={handleClose} size="lg" centered>
         <Modal.Header closeButton style={{ borderBottom: '3px solid var(--azul-celeste-v2)' }}>
           <Modal.Title style={{ fontFamily: 'var(--fuente-titulos)', fontStyle: 'italic', color: 'var(--azul-universitario)' }}>
@@ -133,7 +135,7 @@ const HomeSelector = () => {
               <h5 className="fw-bold mb-3" style={{ color: 'var(--azul-oscuro)' }}>¿Cómo crear tu cuenta?</h5>
               <ListGroup variant="flush" className="mb-4">
                 <ListGroup.Item className="d-flex align-items-start border-0 px-0">
-                  <CheckCircleFill className="text-success me-2 mt-1" /> Ser estudiante activo con carné vigente.
+                  <CheckCircleFill className="text-success me-2 mt-1" /> Ser estudiante o catedrático activo.
                 </ListGroup.Item>
                 <ListGroup.Item className="d-flex align-items-start border-0 px-0">
                   <CheckCircleFill className="text-success me-2 mt-1" /> Contar con correo institucional (@miumg.edu.gt).
