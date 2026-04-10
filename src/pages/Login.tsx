@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
-// Asegúrate de importar tu CSS global aquí si no lo tienes en el App.tsx
+import ThemeSwitcher from '../components/ThemeSwitcher';
 import '../index.css'; 
 
 const Login = () => {
+  // Apply saved theme
+  useEffect(() => {
+    const t = localStorage.getItem('umg-theme') || 'azul';
+    document.documentElement.setAttribute('data-theme', t);
+  }, []);
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -45,7 +51,7 @@ const Login = () => {
           text: data.error || 'Carné o contraseña incorrectos.',
           icon: 'error',
           confirmButtonText: 'Reintentar',
-          confirmButtonColor: 'var(--rojo-institucional)' // Uso del rojo oficial para alertas críticas
+          confirmButtonColor: 'var(--rojo-institucional)'
         });
       }
     } catch (error) {
@@ -61,8 +67,7 @@ const Login = () => {
   };
 
   return (
-    <div style={{ 
-      backgroundColor: 'var(--fondo-general)', // Gris claro según PDF
+    <div className="bg-mesh" style={{ 
       minHeight: '100vh', 
       display: 'flex', 
       alignItems: 'center',
@@ -70,23 +75,18 @@ const Login = () => {
       overflow: 'hidden'
     }}>
       
-      {/* Círculos decorativos usando los celestes del PDF */}
-      <div style={{
-        position: 'absolute', top: '-100px', right: '-100px', width: '350px', height: '350px',
-        borderRadius: '50%', background: 'radial-gradient(circle, var(--fondo-curvas) 0%, transparent 70%)', pointerEvents: 'none'
-      }} />
-      <div style={{
-        position: 'absolute', bottom: '-60px', left: '-60px', width: '250px', height: '250px',
-        borderRadius: '50%', background: 'radial-gradient(circle, var(--fondo-banner) 0%, transparent 70%)', pointerEvents: 'none'
-      }} />
+      {/* Decorative glass circles */}
+      <div className="deco-circle deco-circle-1" />
+      <div className="deco-circle deco-circle-2" />
+      <div className="deco-circle deco-circle-3" />
 
       <Container style={{ position: 'relative', zIndex: 1 }}>
         <Row className="justify-content-center">
           <Col md={5} lg={4}>
             
-            <div className="text-center mb-3">
+            <div className="text-center mb-3 animate-fade-in">
               <Link to="/" className="text-decoration-none" style={{ 
-                color: 'var(--azul-oscuro)', 
+                color: 'var(--color-primario)', 
                 fontSize: '0.9rem',
                 fontWeight: 'bold'
               }}>
@@ -94,31 +94,29 @@ const Login = () => {
               </Link>
             </div>
 
-            <Card className="border-0 shadow-lg" style={{ 
+            <Card className="border-0 liquid-card animate-fade-in" style={{ 
               borderRadius: '20px', 
-              overflow: 'hidden',
-              backgroundColor: 'var(--fondo-blanco)'
+              overflow: 'hidden'
             }}>
               {/* Barra de acento con Azul Celeste Brillante 2 [cite: 6] */}
-              <div style={{ height: '5px', backgroundColor: 'var(--azul-celeste-v2)' }} />
+              <div className="accent-bar" style={{ backgroundColor: 'var(--azul-celeste-v2)' }} />
               
               <Card.Body className="p-4 pt-5 pb-5">
                 <div className="text-center mb-4">
-                  <div className="logo-container mb-3">
-                    <img src="/logo.png" alt="Logo UMG" style={{ width: '120px', height: 'auto', opacity: '0.9' }} />
+                  <div className="mb-3 animate-float logo-halo">
+                    <img src="/logo.png" alt="Logo UMG" className="logo-panel" style={{ width: '120px', height: 'auto' }} />
                   </div>
-                  {/* El H2 automáticamente agarrará Ubuntu Cursiva por nuestro CSS global */}
-                  <h2 className="mb-1" style={{ color: 'var(--azul-universitario)' }}>
+                  <h2 className="mb-1" style={{ color: 'var(--color-accion)' }}>
                     MiUMG Parqueo
                   </h2>
-                  <p style={{ color: 'var(--azul-oscuro)', fontSize: '0.88rem', marginBottom: 0 }}>
+                  <p style={{ color: 'var(--color-primario)', fontSize: '0.88rem', marginBottom: 0 }}>
                     Portal de acceso para estudiantes
                   </p>
                 </div>
 
                 <Form onSubmit={handleSubmit} style={{ fontFamily: 'var(--fuente-principal)' }}>
                   <Form.Group className="mb-3">
-                    <Form.Label style={{ color: 'var(--azul-universitario)', fontWeight: 'bold' }}>Número de Carné</Form.Label>
+                    <Form.Label style={{ color: 'var(--color-accion)', fontWeight: 'bold' }}>Número de Carné</Form.Label>
                     <Form.Control 
                       name="carne" type="text" required 
                       placeholder="Ej: 5190-24-1234" 
@@ -127,7 +125,7 @@ const Login = () => {
                   </Form.Group>
 
                   <Form.Group className="mb-4">
-                    <Form.Label style={{ color: 'var(--azul-universitario)', fontWeight: 'bold' }}>Contraseña</Form.Label>
+                    <Form.Label style={{ color: 'var(--color-accion)', fontWeight: 'bold' }}>Contraseña</Form.Label>
                     <Form.Control 
                       name="password" type="password" required 
                       placeholder="Ingresa tu contraseña"
@@ -135,14 +133,13 @@ const Login = () => {
                   </Form.Group>
 
                   <div className="d-grid mt-4">
-                    {/* Botón de Acción con Azul Universitario [cite: 31] */}
-                    <Button type="submit" size="lg" style={{ 
-                      backgroundColor: 'var(--azul-universitario)', 
+                    <Button type="submit" size="lg" className="btn-liquid" style={{ 
+                      backgroundColor: 'var(--color-accion)', 
                       border: 'none',
                       fontSize: '1rem',
                       fontWeight: 'bold',
                       padding: '0.75rem',
-                      fontFamily: 'var(--fuente-titulos)', /* Ubuntu para el Call To Action */
+                      fontFamily: 'var(--fuente-titulos)',
                       fontStyle: 'italic'
                     }}>
                       Iniciar Sesión
@@ -150,9 +147,9 @@ const Login = () => {
                   </div>
                   
                   <div className="text-center mt-4">
-                    <span style={{ color: 'var(--azul-oscuro)', fontSize: '0.88rem' }}>¿Aún no tienes tu acceso? </span>
+                    <span style={{ color: 'var(--color-primario)', fontSize: '0.88rem' }}>¿Aún no tienes tu acceso? </span>
                     <Link to="/registro" className="text-decoration-none" style={{ 
-                      color: 'var(--azul-celeste-v1)', 
+                      color: 'var(--color-acento-1)', 
                       fontSize: '0.9rem',
                       fontWeight: 'bold' 
                     }}>
@@ -165,6 +162,7 @@ const Login = () => {
           </Col>
         </Row>
       </Container>
+      <ThemeSwitcher />
     </div>
   );
 };

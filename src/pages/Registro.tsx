@@ -2,31 +2,82 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import ThemeSwitcher from '../components/ThemeSwitcher';
+
+const API_BASE = 'http://localhost:3001/api';
 
 const Registro = () => {
   const navigate = useNavigate();
 
+  // Apply saved theme
+  useEffect(() => {
+    const t = localStorage.getItem('umg-theme') || 'azul';
+    document.documentElement.setAttribute('data-theme', t);
+  }, []);
+
   // --- ESTADOS PARA CATÁLOGOS DINÁMICOS ---
   const [facultades, setFacultades] = useState<any[]>([]);
+  const [sedes, setSedes] = useState<any[]>([]);
+  const [ciclos, setCiclos] = useState<any[]>([]);
+  const [secciones, setSecciones] = useState<any[]>([]);
+  const [jornadas, setJornadas] = useState<any[]>([]);
+  const [departamentos, setDepartamentos] = useState<any[]>([]);
+  const [municipios, setMunicipios] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [deptoSeleccionado, setDeptoSeleccionado] = useState('');
 
-  // --- CARGA DE DATOS DESDE ORACLE (EFECTO F5) ---
+  // --- CARGA PARALELA DE TODOS LOS CATÁLOGOS (Promise.all nativo) ---
   useEffect(() => {
-    const cargarDatos = async () => {
+    const cargarCatalogos = async () => {
       try {
-        const resFacultades = await fetch('http://localhost:3001/api/facultades');
-        if (resFacultades.ok) {
-          const data = await resFacultades.json();
-          setFacultades(data);
-        }
+        const [resFac, resSedes, resCiclos, resSec, resJor, resDepto] = await Promise.all([
+          fetch(`${API_BASE}/facultades`),
+          fetch(`${API_BASE}/sedes`),
+          fetch(`${API_BASE}/ciclos`),
+          fetch(`${API_BASE}/secciones`),
+          fetch(`${API_BASE}/jornadas`),
+          fetch(`${API_BASE}/departamentos`),
+        ]);
+
+        const [facData, sedesData, ciclosData, secData, jorData, deptoData] = await Promise.all([
+          resFac.json(), resSedes.json(), resCiclos.json(),
+          resSec.json(), resJor.json(), resDepto.json(),
+        ]);
+
+        setFacultades(facData);
+        setSedes(sedesData);
+        setCiclos(ciclosData);
+        setSecciones(secData);
+        setJornadas(jorData);
+        setDepartamentos(deptoData);
       } catch (error) {
         console.error("Error al conectar con la API:", error);
       } finally {
         setCargando(false);
       }
     };
-    cargarDatos();
+    cargarCatalogos();
   }, []);
+
+  // --- CASCADA: Departamento → Municipios ---
+  useEffect(() => {
+    if (!deptoSeleccionado) {
+      setMunicipios([]);
+      return;
+    }
+    const cargarMunicipios = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/municipios/${deptoSeleccionado}`);
+        if (res.ok) {
+          const data = await res.json();
+          setMunicipios(data);
+        }
+      } catch (error) {
+        console.error("Error al cargar municipios:", error);
+      }
+    };
+    cargarMunicipios();
+  }, [deptoSeleccionado]);
 
   // --- ENVÍO DEL FORMULARIO ---
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -35,7 +86,7 @@ const Registro = () => {
     const datosUsuario = Object.fromEntries(formData.entries());
 
     try {
-      const response = await fetch('http://localhost:3001/api/auth/registro', {
+      const response = await fetch(`${API_BASE}/auth/registro`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datosUsuario),
@@ -78,7 +129,7 @@ const Registro = () => {
       <Container>
         <Row className="justify-content-center">
           <Col md={10} lg={9}>
-            <Card className="shadow-lg border-0" style={{ borderRadius: '20px' }}>
+            <Card className="border-0 shadow-lg liquid-card" style={{ borderRadius: '20px' }}>
               {/* Acento visual según Guía de Diseño */}
               <div style={{ height: '5px', backgroundColor: 'var(--azul-celeste-v2)' }} />
               
@@ -139,21 +190,39 @@ const Registro = () => {
                     </Col>
                   </Row>
 
-                  {/* --- SECCIÓN 2: UBICACIÓN --- */}
+                  {/* --- SECCIÓN 2: UBICACIÓN (CASCADA DINÁMICA) --- */}
                   <h5 className="mb-3 fw-bold border-bottom pb-2" style={{ color: 'var(--azul-universitario)', fontStyle: 'italic', fontFamily: 'var(--fuente-titulos)' }}>
                     2. Dirección de Residencia
                   </h5>
                   <Row className="mb-4">
                     <Col md={4}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">Municipio</Form.Label>
-                        <Form.Select name="id_municipio" required>
+                        <Form.Label className="fw-bold">Departamento</Form.Label>
+                        <Form.Select
+                          value={deptoSeleccionado}
+                          onChange={(e) => setDeptoSeleccionado(e.target.value)}
+                          required
+                          disabled={cargando}
+                        >
                           <option value="">Selecciona...</option>
-                          <option value="1">Guatemala (Ciudad)</option>
-                          <option value="2">Villa Nueva</option>
-                          <option value="3">San Miguel Petapa</option>
-                          <option value="4">Mixco</option>
-                          <option value="5">Antigua Guatemala</option>
+                          {departamentos.map((d) => (
+                            <option key={d.ID_DEPARTAMENTO} value={d.ID_DEPARTAMENTO}>
+                              {d.NOMBRE_DEPARTAMENTO}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                    <Col md={4}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">Municipio</Form.Label>
+                        <Form.Select name="id_municipio" required disabled={!deptoSeleccionado}>
+                          <option value="">{deptoSeleccionado ? 'Selecciona municipio...' : 'Elige departamento primero'}</option>
+                          {municipios.map((m) => (
+                            <option key={m.ID_MUNICIPIO} value={m.ID_MUNICIPIO}>
+                              {m.NOMBRE_MUNICIPIO}
+                            </option>
+                          ))}
                         </Form.Select>
                       </Form.Group>
                     </Col>
@@ -176,7 +245,7 @@ const Registro = () => {
                     </Col>
                   </Row>
 
-                  {/* --- SECCIÓN 3: ACADÉMICO --- */}
+                  {/* --- SECCIÓN 3: ACADÉMICO (100% DINÁMICO) --- */}
                   <h5 className="mb-3 fw-bold border-bottom pb-2" style={{ color: 'var(--azul-universitario)', fontStyle: 'italic', fontFamily: 'var(--fuente-titulos)' }}>
                     3. Datos Académicos
                   </h5>
@@ -184,14 +253,8 @@ const Registro = () => {
                     <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label className="fw-bold">Facultad</Form.Label>
-                        {/* 1. Usamos la variable 'cargando' para bloquear la caja mientras Oracle responde */}
                         <Form.Select name="id_facultad" required disabled={cargando}>
-                          
-                          {/* 2. Dejamos el texto normal, limpio y elegante */}
-                          {/* El truco ninja: disabled y hidden hacen que sea solo un texto fantasma */}
                           <option value="" disabled hidden>Selecciona tu facultad...</option>
-                          
-                          {/* 3. React inyectará los datos aquí en silencio cuando lleguen */}
                           {facultades.map((f) => (
                             <option key={f.ID_FACULTAD} value={f.ID_FACULTAD}>
                               {f.NOMBRE_FACULTAD}
@@ -202,28 +265,79 @@ const Registro = () => {
                     </Col>
                     <Col md={3}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">Ciclo</Form.Label>
-                        <Form.Select name="id_ciclo" required>
-                          {[...Array(12)].map((_, i) => (
-                            <option key={i + 1} value={i + 1}>Ciclo {i + 1}</option>
+                        <Form.Label className="fw-bold">Sede</Form.Label>
+                        <Form.Select name="id_sede" required disabled={cargando}>
+                          <option value="">Selecciona...</option>
+                          {sedes.map((s) => (
+                            <option key={s.ID_SEDE} value={s.ID_SEDE}>
+                              {s.NOMBRE_SEDE}
+                            </option>
                           ))}
                         </Form.Select>
                       </Form.Group>
                     </Col>
                     <Col md={3}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">Sección Base</Form.Label>
-                        <Form.Select name="id_seccion" required>
-                          <option value="1">A</option>
-                          <option value="2">B</option>
-                          <option value="3">C</option>
+                        <Form.Label className="fw-bold">Ciclo</Form.Label>
+                        <Form.Select name="id_ciclo" required disabled={cargando}>
+                          <option value="">Selecciona...</option>
+                          {ciclos.map((c) => (
+                            <option key={c.ID_CICLO} value={c.ID_CICLO}>
+                              {c.NOMBRE_CICLO}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                    <Col md={3}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">Sección</Form.Label>
+                        <Form.Select name="id_seccion" required disabled={cargando}>
+                          <option value="">Selecciona...</option>
+                          {secciones.map((s) => (
+                            <option key={s.ID_SECCION} value={s.ID_SECCION}>
+                              {s.NOMBRE_SECCION}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                    <Col md={3}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">Jornada</Form.Label>
+                        <Form.Select name="id_jornada" required disabled={cargando}>
+                          <option value="">Selecciona...</option>
+                          {jornadas.map((j) => (
+                            <option key={j.ID_JORNADA} value={j.ID_JORNADA}>
+                              {j.NOMBRE_JORNADA}
+                            </option>
+                          ))}
                         </Form.Select>
                       </Form.Group>
                     </Col>
                   </Row>
 
+                  {/* --- SECCIÓN 4: EMERGENCIA --- */}
+                  <h5 className="mb-3 fw-bold border-bottom pb-2 mt-2" style={{ color: 'var(--azul-universitario)', fontStyle: 'italic', fontFamily: 'var(--fuente-titulos)' }}>
+                    4. Contacto de Emergencia
+                  </h5>
+                  <Row className="mb-4">
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold text-danger">Nombre de Contacto</Form.Label>
+                        <Form.Control name="emergencia_nombre" type="text" required placeholder="Familiar o Contacto" />
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold text-danger">Teléfono de Emergencia</Form.Label>
+                        <Form.Control name="emergencia_telefono" type="tel" required placeholder="8 dígitos" pattern="[0-9]{8}" />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
                   <div className="d-grid gap-2 mt-5">
-                    <Button type="submit" size="lg" style={{ 
+                    <Button type="submit" size="lg" className="btn-liquid" style={{ 
                       backgroundColor: 'var(--azul-universitario)', 
                       border: 'none',
                       fontFamily: 'var(--fuente-titulos)',
@@ -246,6 +360,7 @@ const Registro = () => {
           </Col>
         </Row>
       </Container>
+      <ThemeSwitcher />
     </div>
   );
 };
