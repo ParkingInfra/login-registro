@@ -42,6 +42,101 @@ app.get('/api/facultades', async (req, res) => {
   }
 });
 
+// =============================================
+// SISTEMA DE CACHÉ EN MEMORIA (Nativo Node.js)
+// =============================================
+// Sin dependencias externas. Usa Map nativo de JS.
+// TTL de 24 horas: Oracle se consulta 1 vez por día por catálogo.
+const cache = new Map();
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+
+function getCache(key) {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > CACHE_TTL) {
+    cache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCache(key, data) {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+
+// Función auxiliar reutilizable para servir catálogos con caché
+async function serveCatalog(req, res, cacheKey, sql) {
+  const cached = getCache(cacheKey);
+  if (cached) {
+    return res.status(200).json(cached);
+  }
+  let connection;
+  try {
+    connection = await oracledb.getConnection(dbConfig);
+    const result = await connection.execute(sql, [], { outFormat: oracledb.OUT_FORMAT_OBJECT });
+    setCache(cacheKey, result.rows);
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error(`[ERROR] Error al obtener ${cacheKey}:`, err.message);
+    res.status(500).json({ error: "Error interno del servidor", detalle: err.message });
+  } finally {
+    if (connection) {
+      try { await connection.close(); } catch (e) { /* ignore */ }
+    }
+  }
+}
+
+// =============================================
+// ENDPOINTS DE CATÁLOGOS DINÁMICOS
+// =============================================
+
+app.get('/api/sedes', (req, res) => {
+  serveCatalog(req, res, 'sedes', 'SELECT id_sede, nombre_sede FROM SEDE_CAMPUS ORDER BY nombre_sede');
+});
+
+app.get('/api/ciclos', (req, res) => {
+  serveCatalog(req, res, 'ciclos', 'SELECT id_ciclo, nombre_ciclo FROM CICLO_SEMESTRE ORDER BY id_ciclo');
+});
+
+app.get('/api/secciones', (req, res) => {
+  serveCatalog(req, res, 'secciones', 'SELECT id_seccion, nombre_seccion FROM SECCION ORDER BY id_seccion');
+});
+
+app.get('/api/jornadas', (req, res) => {
+  serveCatalog(req, res, 'jornadas', 'SELECT id_jornada, nombre_jornada FROM JORNADAS WHERE activo = 1 ORDER BY id_jornada');
+});
+
+app.get('/api/departamentos', (req, res) => {
+  serveCatalog(req, res, 'departamentos', 'SELECT id_departamento, nombre_departamento FROM DEPARTAMENTOS ORDER BY nombre_departamento');
+});
+
+app.get('/api/municipios/:id_depto', async (req, res) => {
+  const idDepto = parseInt(req.params.id_depto);
+  const cacheKey = `municipios_${idDepto}`;
+  const cached = getCache(cacheKey);
+  if (cached) {
+    return res.status(200).json(cached);
+  }
+  let connection;
+  try {
+    connection = await oracledb.getConnection(dbConfig);
+    const result = await connection.execute(
+      'SELECT id_municipio, nombre_municipio FROM MUNICIPIOS WHERE id_departamento = :id ORDER BY nombre_municipio',
+      { id: idDepto },
+      { outFormat: oracledb.OUT_FORMAT_OBJECT }
+    );
+    setCache(cacheKey, result.rows);
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("[ERROR] Error al obtener municipios:", err.message);
+    res.status(500).json({ error: "Error interno del servidor", detalle: err.message });
+  } finally {
+    if (connection) {
+      try { await connection.close(); } catch (e) { /* ignore */ }
+    }
+  }
+});
+
 // --- RUTA PRINCIPAL: Recibir datos de React y guardar en Oracle
 app.post('/api/auth/registro', async (req, res) => {
   let connection;
@@ -138,9 +233,11 @@ app.post('/api/auth/registro', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   let connection;
   try {
-    const { carne, correo_institucional, password } = req.body;
+    // Recibimos carné O correo desde React
+    const { carne, correo_institucional, correo_electronico, password } = req.body;
     
-    const identificador = carne || correo_institucional; 
+    // Si viene carne, usamos ese. Si viene correo (cualquiera de los dos nombres de campo), usamos el correo.
+    const identificador = carne || correo_institucional || correo_electronico; 
     console.log(`🔑 Intento de login para: ${identificador}`);
 
     connection = await oracledb.getConnection(dbConfig);
