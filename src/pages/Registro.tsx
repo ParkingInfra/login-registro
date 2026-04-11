@@ -240,7 +240,7 @@ const Registro = () => {
                     <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label className="fw-bold">(Casa/Apto/Calle)</Form.Label>
-                        <Form.Control name="nomenclatura" type="text" required placeholder="Ej: Villas de Guillen Casa H9" />
+                        <Form.Control name="nomenclatura" type="text" required placeholder="Ej: Umg Casa C10" />
                       </Form.Group>
                     </Col>
                   </Row>
